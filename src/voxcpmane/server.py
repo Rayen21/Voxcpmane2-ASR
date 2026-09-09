@@ -17,7 +17,7 @@ import numpy as np
 import sounddevice as sd
 import uvicorn
 import pathlib
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.responses import (
     StreamingResponse,
     JSONResponse,
@@ -61,6 +61,8 @@ MODEL_PATH_PREFIX = ""
 VOICE_CACHE_DIR = ""
 VOICE_CACHE_DIRS: list[str] = []
 CUSTOM_VOICE_CACHE_DIR = os.path.expanduser("~/.cache/ane_tts")
+UPLOAD_DIR = "/tmp/voxcpm_uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 PROMPT_DECODE_CONTEXT_PATCHES = 3
 LM_MULTIFUNCTION_PREFILL_LENGTHS = (1, 8, 16, 32, 64, 128)
 RAW_AUDIO_FORMATS = {"wav", "flac"}
@@ -1084,6 +1086,30 @@ def generate_audio_chunks(
 @app.on_event("startup")
 async def startup_event():
     threading.Thread(target=generation_worker, daemon=True).start()
+
+@app.post("/v1/audio/upload")
+async def upload_audio(file: UploadFile = File(...)):
+    """Upload audio file for voice cloning."""
+    allowed_ext = {".wav", ".mp3", ".flac", ".ogg", ".m4a", ".aac"}
+    ext = pathlib.Path(file.filename).suffix.lower()
+    if ext not in allowed_ext:
+        raise HTTPException(status_code=400, detail=f"Unsupported file format: {ext}")
+    
+    # Sanitize filename
+    safe_name = re.sub(r"[^a-zA-Z0-9_.-]", "_", file.filename)
+    dest_path = os.path.join(UPLOAD_DIR, safe_name)
+    
+    with open(dest_path, "wb") as f:
+        content = await file.read()
+        f.write(content)
+    
+    return JSONResponse(content={
+        "status": "success",
+        "file_path": dest_path,
+        "file_name": safe_name,
+        "size_bytes": len(content),
+    })
+
 
 
 @app.get("/", response_class=HTMLResponse)
