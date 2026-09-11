@@ -75,6 +75,14 @@ body.dark .theme-toggle:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
 .no-transition { transition: none !important; }
 /* ===== 进度条 ===== */
 .progress-fill { background: linear-gradient(90deg, #0ea5e9, #2563eb); transition: width 0.3s ease; }
+/* ===== 进度条呼吸动画 ===== */
+@keyframes progressBreath {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+}
+.progress-fill.generating {
+    animation: progressBreath 1.2s ease-in-out infinite;
+}
 /* ===== 日志面板 ===== */
 .log-panel { background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(0, 0, 0, 0.05); border-radius: 1rem; max-height: 280px; overflow-y: auto; font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace; font-size: 11px; line-height: 1.6; }
 .log-panel::-webkit-scrollbar { width: 6px; }
@@ -636,7 +644,7 @@ async function streamAndPlay() {
                 await new Promise(r => { resumeStreamResolve = r; });
             }
             const { done, value } = await reader.read();
-            if (done) break;
+            if (done) { updateProgress(100); break; }
             chunks.push(value);
             totalBytes += value.length;
             if (!firstChunkTime) {
@@ -660,13 +668,12 @@ async function streamAndPlay() {
             }
             
             const prog = Math.min(95, (totalBytes / 1024 / 1024 * 5).toFixed(0));
-            updateProgress(prog);
+            updateProgress(null, true);
         }
 
         // Finalize playback
         if (lastSrc) {
             lastSrc.onended = () => {
-            updateProgress(100);
                 updateGenerationStatus(`✅ 流式播放完成!`, 'success');
                 addLog(`✅ 流式播放完成! | ${((totalBytes/1024/1024)).toFixed(1)}MB`, 'success');
             };
@@ -762,7 +769,18 @@ mainPlayer.addEventListener('pause', () => { if (!isStreaming) { pauseBtn.innerH
 mainPlayer.addEventListener('ended', () => { if (!isStreaming) { pauseBtn.innerHTML = '<i class="fa-solid fa-circle-play mr-1"></i> <span>播放/暂停</span>'; document.getElementById('progressLabel').textContent = '准备就绪'; updateProgress(0); updateGenerationStatus('✅ 播放完毕', 'success'); } });
 
 // ===== 工具函数 =====
-function updateProgress(p) { document.getElementById('progressBar').style.width = p+'%'; document.getElementById('progressPercent').textContent = Math.round(p)+'%'; }
+function updateProgress(p, isGenerating = false) { 
+    const bar = document.getElementById('progressBar');
+    if (isGenerating) {
+        bar.classList.add('generating');
+        document.getElementById('progressLabel').textContent = '正在生成...';
+        document.getElementById('progressPercent').textContent = '';
+    } else {
+        bar.classList.remove('generating');
+        bar.style.width = p+'%'; 
+        document.getElementById('progressPercent').textContent = Math.round(p)+'%';
+    }
+}
 function resetStreamUI() {
     isStreaming = false; isStreamPaused = false; resumeStreamResolve = null;
     document.getElementById('playBtn').disabled = false; document.getElementById('playBtn').innerHTML = '<i class="fa-solid fa-bolt mr-1"></i> <span>实时播放</span>';
@@ -778,7 +796,8 @@ document.getElementById('downloadBtn')?.addEventListener('click', () => {
     if (!currentAudioUrl) return;
     const a = document.createElement('a');
     a.href = currentAudioUrl;
-    a.download = 'voxcpm_audio_' + Date.now() + '.wav';
+    const seedVal = document.getElementById('seed').value.trim();
+    a.download = `voxcpm_${seedVal || 'unknown'}.wav`;
     a.click();
 });
 
