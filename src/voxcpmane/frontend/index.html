@@ -76,12 +76,13 @@ body.dark .theme-toggle:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
 /* ===== 进度条 ===== */
 .progress-fill { background: linear-gradient(90deg, #0ea5e9, #2563eb); transition: width 0.3s ease; }
 /* ===== 进度条呼吸动画 ===== */
-@keyframes progressBreath {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 1; }
+@keyframes progressShimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
 }
 .progress-fill.generating {
-    animation: progressBreath 1.2s ease-in-out infinite;
+    animation: progressShimmer 2s linear infinite;
+    background-size: 300% 100%;
 }
 /* ===== 日志面板 ===== */
 .log-panel { background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(0, 0, 0, 0.05); border-radius: 1rem; max-height: 280px; overflow-y: auto; font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace; font-size: 11px; line-height: 1.6; }
