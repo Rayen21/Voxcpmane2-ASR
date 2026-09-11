@@ -74,16 +74,8 @@ body.dark .theme-toggle:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
 *, *::before, *::after { transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease; }
 .no-transition { transition: none !important; }
 /* ===== 进度条 ===== */
-.progress-fill { background: linear-gradient(90deg, #10b981, #f59e0b); transition: width 0.3s ease; }
-/* ===== 进度条流动动画（生成中） ===== */
-@keyframes progressFlow {
-    0% { background-position: -200px center; }
-    100% { background-position: 200px center; }
-}
-.progress-fill.generating {
-    animation: progressFlow 1.5s linear infinite;
-    background-size: 400% 100%;
-}
+.progress-fill { background: linear-gradient(90deg, #0ea5e9, #2563eb); transition: width 0.3s ease; }
+
 /* ===== 日志面板 ===== */
 .log-panel { background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(0, 0, 0, 0.05); border-radius: 1rem; max-height: 280px; overflow-y: auto; font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace; font-size: 11px; line-height: 1.6; }
 .log-panel::-webkit-scrollbar { width: 6px; }
@@ -773,14 +765,31 @@ mainPlayer.addEventListener('ended', () => { if (!isStreaming) { pauseBtn.innerH
 function updateProgress(p, isGenerating = false) { 
     const bar = document.getElementById('progressBar');
     if (isGenerating) {
-        bar.classList.add('generating');
+        bar.classList.remove('generating');
+        bar.style.width = '0%';
         document.getElementById('progressLabel').textContent = '正在生成...';
-        document.getElementById('progressPercent').textContent = '';
+        // 模拟百分比跳动
+        simulateProgress();
     } else {
         bar.classList.remove('generating');
         bar.style.width = p+'%'; 
         document.getElementById('progressPercent').textContent = Math.round(p)+'%';
+        if (window._simInterval) clearInterval(window._simInterval);
     }
+}
+
+function simulateProgress() {
+    const el = document.getElementById('progressPercent');
+    let current = 0;
+    window._simInterval = setInterval(() => {
+        if (!document.getElementById('progressBar').classList.contains('generating')) {
+            clearInterval(window._simInterval);
+            return;
+        }
+        // 随机跳动到 1-95%
+        current = Math.min(95, current + Math.floor(Math.random() * 8));
+        el.textContent = current + '%';
+    }, 300);
 }
 function resetStreamUI() {
     isStreaming = false; isStreamPaused = false; resumeStreamResolve = null;
