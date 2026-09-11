@@ -155,7 +155,7 @@ ANE Engine Active
 <!-- ========== 参考音频（克隆模式） ========== -->
 <div id="refAudioSection" class="tab-content space-y-4">
 <div>
-<label class="block text-[11px] font-black text-[#86868B] uppercase ml-1 mb-2">参考音频 <span class="text-red-400">*</span></label>
+<label class="block text-[11px] font-black text-[#86868B] uppercase ml-1 mb-2">参考音频 <span class="text-red-400"> *</span></label>
 <label id="uploadBtnWrap" class="cursor-pointer block">
 <input type="file" id="audioFileInput" accept="audio/*" class="hidden" onchange="handleAudioUpload(event)">
 <div class="bg-[#F5F5F7] hover:bg-[#E5E5EA] border-2 border-dashed border-[#D2D2D7] hover:border-blue-400 rounded-xl p-4 text-sm text-center transition-all flex flex-col items-center justify-center gap-1">
@@ -175,14 +175,14 @@ ANE Engine Active
 <!-- ========== 情感描述（声音设计 / 可控克隆） ========== -->
 <div id="emotionDescSection" class="tab-content active space-y-4">
 <div>
-<label class="block text-[11px] font-black text-[#86868B] uppercase ml-1 mb-2" id="emotionLabel">情感描述 <span class="text-red-400">*</span></label>
+<label class="block text-[11px] font-black text-[#86868B] uppercase ml-1 mb-2" id="emotionLabel">情感描述 <span class="text-red-400"> *</span></label>
 <textarea id="voiceDesc" class="w-full bg-[#F5F5F7] border-none rounded-xl p-4 text-sm focus:ring-1 focus:ring-blue-500" rows="3" placeholder="描述目标音色特征（性别、年龄、语气、情绪、语速等）例：中老年女性，声音低沉阴冷，语速缓慢而有力..."></textarea>
 </div>
 </div>
 <!-- ========== 转录文本（极致克隆） ========== -->
 <div id="transcriptSection" class="tab-content space-y-4">
 <div>
-<label class="block text-[11px] font-black text-[#86868B] uppercase ml-1 mb-2">参考音频转录文本 <span class="text-red-400">*</span></label>
+<label class="block text-[11px] font-black text-[#86868B] uppercase ml-1 mb-2">参考音频转录文本 <span class="text-red-400"> *</span></label>
 <textarea id="transcriptText" class="w-full bg-[#F5F5F7] border-none rounded-xl p-4 text-sm focus:ring-1 focus:ring-blue-500" rows="3" placeholder="上传参考音频后自动填入，也可手动编辑...(首次预加载ASR模型约30秒请耐心等待)"></textarea>
 </div>
 </div>
@@ -226,7 +226,7 @@ ANE Engine Active
 <div class="space-y-6">
 <h2 class="text-sm font-bold text-slate-800 flex items-center"><i class="fa-solid fa-font mr-2 text-blue-500"></i> 合成内容结果</h2>
 <div>
-<label class="block text-[11px] font-black text-[#86868B] uppercase ml-1 mb-2">待生成的文案内容<span class="text-red-400">*</span></label>
+<label class="block text-[11px] font-black text-[#86868B] uppercase ml-1 mb-2">待生成的文案内容 <span class="text-red-400"> *</span></label>
 <textarea id="promptText" class="w-full bg-[#F5F5F7] border-none rounded-2xl p-4 text-sm focus:ring-1 focus:ring-blue-500" rows="4" placeholder="在此输入您想要合成的文本内容..."></textarea>
 </div>
 <!-- 进度条 -->
@@ -415,11 +415,11 @@ function selectMode(mode) {
 
     if (mode === 'voice-design') {
         emotionDesc.setAttribute('style', 'display: block !important;');
-        emotionLabel.innerHTML = '情感描述 <span class="text-red-400">*</span>';
+        emotionLabel.innerHTML = '情感描述 <span class="text-red-400"> *</span>';
     } else if (mode === 'controllable-cloning') {
         refAudio.setAttribute('style', 'display: block !important;');
         emotionDesc.setAttribute('style', 'display: block !important;');
-        emotionLabel.innerHTML = '情感描述 <span class="text-red-400">*</span>';
+        emotionLabel.innerHTML = '情感描述 <span class="text-red-400"> *</span>';
     } else if (mode === 'ultimate-cloning') {
         refAudio.setAttribute('style', 'display: block !important;');
         transcript.setAttribute('style', 'display: block !important;');
