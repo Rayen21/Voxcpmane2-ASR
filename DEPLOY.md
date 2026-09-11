@@ -20,11 +20,6 @@
 1. **启动服务器**：`voxcpm2-server` 命令从 conda 环境激活后执行，实际运行的是安装目录中的代码
 2. **修改代码**：前端 UI 修改、代码编辑都在 `/Users/hanqingren/voxcpm` 中进行
 3. **修改后必须同步到安装目录**：在仓库目录修改完前端后，**必须手动复制**到安装目录才能生效
-   ```bash
-   cp /Users/hanqingren/voxcpm/src/voxcpmane/frontend/index.html \
-      /Users/hanqingren/miniforge3/envs/voxcpm2/lib/python3.11/site-packages/voxcpmane/frontend/index.html
-   ```
-
 ---
 
 ## M1 设备兼容性问题（核心）
@@ -136,7 +131,7 @@ coremltools==9.0, numpy>=2, ml-dtypes>=0.5.0, soundfile, soxr>=1.0.0, tokenizers
 
 ## 前端修改记录（2026-09-11）
 
-### 深色 UI 修复
+### UI 修复
 - **骰子图标** — `.dice-icon` class 保持 `font-size: 20px`；开启自动随机时蓝色 `#0ea5e9`，关闭时灰色 `#8E8E93`（虚线骰子）
 - **骰子按钮背景色** — 深色模式下设为 `rgba(58, 58, 60, 0.8)`，与随机种子输入框一致
 - **右侧按钮文字颜色** — ID 选择器强制设置 `#E5E5EA` / `#3A3A3C`
@@ -151,6 +146,10 @@ coremltools==9.0, numpy>=2, ml-dtypes>=0.5.0, soundfile, soxr>=1.0.0, tokenizers
 ### 功能调整
 - **移除"成品创建"按钮** — 核实两个端点 `/v1/audio/speech`（非流式）和 `/v1/audio/speech/stream`（流式）生成的音频内容完全一样，统一使用"实时播放"一个入口
 - **新增"下载音频"按钮** — 生成完成后自动启用，点击即可下载 `.wav` 文件
+
+### 进度条修复
+- 恢复原始 `updateProgress()` 函数：根据接收字节数实时更新进度条宽度和百分比数字
+- 移除所有动画效果（呼吸/流光/脉冲），使用蓝色渐变背景 + 模拟百分比跳动
 
 ### 同步规则
 所有前端修改在 `/Users/hanqingren/voxcpm/src/voxcpmane/frontend/index.html` 中进行，必须手动复制到安装目录：
