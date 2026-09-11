@@ -23,11 +23,12 @@ body.dark { background-color: #1C1C1E; color: #E5E5EA; }
 body.dark .glass-card { background: rgba(44, 44, 46, 0.85); backdrop-filter: blur(24px); border: 1px solid rgba(84, 84, 88, 0.4); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); }
 body.dark .mode-btn:not(.active) { background: rgba(60, 60, 62, 0.6); color: #AEAEB2; }
 body.dark .mode-btn:not(.active):hover { background: rgba(84, 84, 88, 0.6); color: #E5E5EA; }
-body.dark select, body.dark textarea, body.dark input[type="number"], body.dark input[type="text"] { background: rgba(58, 58, 60, 0.8) !important; color: #E5E5EA !important; border: 1px solid rgba(84, 84, 88, 0.5) !important; }
+body.dark select, body.dark textarea, body.dark input[type="number"], body.dark input[type="text"] { background: #2C2C2E !important; color: #E5E5EA !important; border: 1px solid rgba(84, 84, 88, 0.5) !important; }
 body.dark select:focus, body.dark textarea:focus, body.dark input:focus { border-color: #054280 !important; box-shadow: 0 0 0 1px #054280 !important; }
 body.dark ::placeholder { color: #636366 !important; }
 body.dark .text-slate-400 { color: #636366 !important; }
 body.dark .text-slate-600 { color: #8E8E93 !important; }
+body.dark .text-slate-700 { color: #A1A1AA !important; }
 body.dark .text-slate-800 { color: #E5E5EA !important; }
 body.dark .text-[\#86868B] { color: #636366 !important; }
 body.dark .text-[\#D2D2D7] { color: #48484A !important; }
@@ -39,9 +40,25 @@ body.dark .bg-[\#E5E5EA] { background-color: #48484A !important; }
 body.dark .bg-[\#E5E5EA]:hover { background-color: #636366 !important; }
 body.dark .bg-gray-100 { background-color: #2C2C2E !important; }
 body.dark .bg-gray-200 { background-color: #3A3A3C !important; }
+/* 骰子图标颜色 */
+.dice-icon { font-size: 20px; color: #0ea5e9; line-height: 1; transition: color 0.3s ease; }
+body.dark .dice-icon { color: #0ea5e9; }
+
+/* 右侧三个按钮文字颜色 - 使用ID选择器确保生效 */
+body.dark #downloadBtn, body.dark #pauseBtn, body.dark #stopBtn { 
+    background-color: #3A3A3C !important; 
+    color: #E5E5EA !important;
+}
+body.dark #downloadBtn span, body.dark #pauseBtn span, body.dark #stopBtn span { color: #E5E5EA !important; }
 body.dark .text-slate-500 { color: #636366 !important; }
+/* 骰子按钮深色模式背景 */
+body.dark #seedToggle { background-color: rgba(58, 58, 60, 0.8) !important; }
+/* 参考音频上传区域深色模式背景色与种子区域一致 */
+body.dark .bg-\[\#F5F5F7\] { background-color: #2C2C2E !important; }
 body.dark .text-slate-500:hover { color: #0A84FF !important; }
 body.dark .text-blue-600 { color: #0A84FF !important; }
+/* 上传区域深色模式 - 更暗的背景 */
+body.dark #uploadArea { background-color: rgba(58, 58, 60, 0.8) !important; border-color: #48484A !important; color: #E5E5EA !important; }
 body.dark .text-blue-500 { color: #0A84FF !important; }
 body.dark .text-blue-500:hover { color: #40A9FF !important; }
 body.dark audio::-webkit-media-controls-panel { background-color: #2C2C2E; }
@@ -175,7 +192,7 @@ ANE Engine Active
 <div class="flex gap-2">
 <input type="text" id="seed" class="flex-1 bg-[#F5F5F7] border-none rounded-xl p-4 text-sm focus:ring-1 focus:ring-blue-500" placeholder="留空自动生成或输入自定义种子">
 <button id="seedToggle" class="px-3 py-2.5 bg-[#E5E5EA] hover:bg-[#D2D2D7] rounded-xl text-[11px] font-medium transition-all flex items-center justify-center" title="切换自动随机/固定种子" onclick="toggleSeedMode()">
-<i class="fa-solid fa-dice"></i>
+<i class="fa-solid fa-dice dice-icon"></i>
 </button>
 </div>
 <div class="text-[10px] text-slate-400 mt-1">可手动输入种子以复用之前的音色</div>
@@ -231,9 +248,9 @@ ANE Engine Active
 <!-- 控制按钮 -->
 <div class="grid grid-cols-4 gap-2">
 <button id="playBtn" class="btn-gradient text-white font-bold py-2.5 rounded-xl shadow-lg flex items-center justify-center text-[11px]"><i class="fa-solid fa-bolt mr-1"></i><span>实时播放</span></button>
-<button id="createBtn" class="px-3 py-2.5 bg-[#E5E5EA] hover:bg-[#D2D2D7] rounded-xl text-[11px] font-medium transition-all flex items-center justify-center"><i class="fa-solid fa-download mr-1"></i><span>成品创建</span></button>
+<button id="downloadBtn" disabled class="px-3 py-2.5 bg-[#E5E5EA] hover:bg-[#D2D2D7] rounded-xl text-[11px] font-medium transition-all flex items-center justify-center opacity-50 cursor-not-allowed"><i class="fa-solid fa-download mr-1"></i><span>下载音频</span></button>
 <button id="pauseBtn" class="px-3 py-2.5 bg-[#E5E5EA] hover:bg-[#D2D2D7] rounded-xl text-[11px] font-medium transition-all flex items-center justify-center"><i class="fa-solid fa-circle-play mr-1"></i><span>播放/暂停</span></button>
-<button id="stopBtn" disabled class="px-3 py-2.5 bg-[#E5E5EA] opacity-50 cursor-not-allowed rounded-xl text-[11px] font-medium transition-all flex items-center justify-center"><i class="fa-solid fa-circle-stop mr-1"></i><span>停止创建</span></button>
+<button id="stopBtn" disabled class="px-3 py-2.5 bg-[#E5E5EA] opacity-50 cursor-not-allowed rounded-xl text-[11px] font-medium transition-all flex items-center justify-center"><i class="fa-solid fa-circle-stop mr-1"></i><span>停止</span></button>
 </div>
 <!-- 生成日志面板 -->
 <div class="space-y-2">
@@ -318,12 +335,14 @@ function toggleSeedMode() {
     const icon = btn.querySelector('i');
     if (autoSeedMode) {
         autoSeedMode = false;
-        icon.className = 'fa-solid fa-dice-dotted';
+        icon.className = 'fa-solid fa-dice-dotted dice-icon';
+        icon.style.color = '#8E8E93';
         btn.title = '已关闭自动随机种子';
         addLog('🔒 固定种子模式已开启', 'warning');
     } else {
         autoSeedMode = true;
-        icon.className = 'fa-solid fa-dice';
+        icon.className = 'fa-solid fa-dice dice-icon';
+        icon.style.color = '#0ea5e9';
         btn.title = '已开启自动随机种子';
         addLog('🎲 自动随机种子模式已开启', 'seed');
     }
@@ -547,65 +566,14 @@ function buildRequestBody(seed) {
     return body;
 }
 
-// ===== 生成音频（成品创建） =====
-async function generateAudio() {
-    const btn = document.getElementById('createBtn');
-    const validation = validateInput();
-    if (!validation.valid) { updateGenerationStatus(`❌ ${validation.message}`, 'error'); addLog(`❌ 验证失败: ${validation.message}`, 'error'); return; }
-
-    if (mainPlayer && !mainPlayer.paused) { mainPlayer.pause(); addLog('⏹ 暂停当前音频播放，开始生成新成品', 'warning'); }
-    if (isStreaming && abortController) abortController.abort();
-
-    updateGenerationStatus('📋 正在提交任务...', 'processing');
-    const seedInput = document.getElementById('seed');
-    let seed = parseInt(seedInput.value.trim());
-    if (autoSeedMode) { seed = Math.floor(Math.random() * (2**32)); seedInput.value = seed; addLog(`🎲 生成随机种子: ${seed}`, 'seed'); }
-    else if (!seed || isNaN(seed)) { seed = Math.floor(Math.random() * (2**32)); seedInput.value = seed; addLog(`🎲 生成随机种子: ${seed}`, 'seed'); }
-    else addLog(`🎲 使用种子: ${seed}`, 'seed');
-    
-    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> <span>生成中...</span>';
-    const stopBtn = document.getElementById('stopBtn'); stopBtn.disabled = false; stopBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-    updateProgress(0); addLog(`🚀 开始成品创建任务 | Seed: ${seed}`, 'info');
-    
-    try {
-        const body = buildRequestBody(seed); abortController = new AbortController();
-        generationStartTime = performance.now();
-        const res = await fetch(`${API_BASE_URL}/v1/audio/speech`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: abortController.signal });
-        if (!res.ok) { 
-            const errorText = await res.text(); 
-            addLog(`❌ 后端详细错误: ${errorText}`, 'error');
-            updateGenerationStatus(`❌ ${diagnoseError(res.status, '', errorText)}`, 'error'); 
-            updateProgress(0); 
-            return; 
-        }
-        const reader = res.body.getReader(); const chunks = []; let receivedLength = 0;
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            chunks.push(value); receivedLength += value.length;
-            updateProgress((receivedLength / 1024 / 1024 * 10).toFixed(1));
-        }
-        const audioBlob = new Blob(chunks, { type: 'audio/wav' });
-        const elapsed = ((performance.now() - generationStartTime) / 1000).toFixed(1);
-        if (currentAudioUrl) URL.revokeObjectURL(currentAudioUrl);
-        currentAudioUrl = URL.createObjectURL(audioBlob);
-        mainPlayer.src = currentAudioUrl;
-        playerContainer.classList.remove('hidden');
-        updateProgress(100);
-        updateGenerationStatus(`✅ 生成完成! (${elapsed}s)`, 'success');
-        addLog(`✅ 成品创建完成! (${elapsed}s) | ${((receivedLength/1024/1024)).toFixed(1)}MB`, 'success');
-    } catch (err) {
-        if (err.name !== 'AbortError') {
-            addLog(`❌ 生成失败: ${err.message}`, 'error');
-            updateGenerationStatus(`❌ ${err.message}`, 'error');
-        }
-    } finally {
-        btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-download mr-1"></i> <span>成品创建</span>';
-        const stopBtn = document.getElementById('stopBtn'); stopBtn.disabled = true; stopBtn.classList.add('opacity-50', 'cursor-not-allowed');
-    }
+// ===== 流式实时播放 =====
+function scheduleNextSource(ctx, queue) {
+    if (queue.length === 0) return;
+    const src = queue.shift();
+    src.start();
+    src.onended = () => scheduleNextSource(ctx, queue);
 }
 
-// ===== 流式播放 =====
 async function streamAndPlay() {
     const validation = validateInput();
     if (!validation.valid) { updateGenerationStatus(`❌ ${validation.message}`, 'error'); return; }
@@ -639,6 +607,8 @@ async function streamAndPlay() {
     updateGenerationStatus('📡 正在连接流式音频...', 'processing');
     addLog(`📡 开始流式播放 | Seed: ${seed}`, 'stream');
 
+    // audioContext 在收到响应后创建（需要 sampleRate）
+
     try {
         const body = buildRequestBody(seed); abortController = new AbortController();
         generationStartTime = performance.now();
@@ -651,11 +621,15 @@ async function streamAndPlay() {
             throw new Error(diagnoseError(res.status, '', errorText));
         }
         const sampleRate = parseInt(res.headers.get('X-Sample-Rate') || '24000');
+        audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
         const reader = res.body.getReader();
         const chunks = [];
         let totalBytes = 0;
         let firstChunkTime = performance.now();
         updateGenerationStatus('🎵 正在接收音频流...', 'processing');
+
+        const playQueue = [];
+        let lastSrc = null;
 
         while (true) {
             if (isStreamPaused) {
@@ -670,36 +644,40 @@ async function streamAndPlay() {
                 addLog(`⚡ TTFB: ${ttfb}s`, 'timing');
                 firstChunkTime = performance.now();
             }
+            
+            // Decode and schedule each chunk as it arrives for real-time playback
+            const wavBlob = pcm16ToWav([value], sampleRate);
+            const audioData = await wavBlob.arrayBuffer();
+            const audioBuffer = await audioContext.decodeAudioData(audioData);
+            const src = audioContext.createBufferSource();
+            lastSrc = src;
+            src.buffer = audioBuffer;
+            src.connect(audioContext.destination);
+            playQueue.push(src);
+            
+            if (playQueue.length === 1) {
+                scheduleNextSource(audioContext, playQueue);
+            }
+            
             const prog = Math.min(95, (totalBytes / 1024 / 1024 * 5).toFixed(0));
             updateProgress(prog);
         }
 
-        // Build WAV file from raw PCM16 data
-        const wavBlob = pcm16ToWav(chunks, sampleRate);
-        const audioUrl = URL.createObjectURL(wavBlob);
-        
-        // Play the audio
-        audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
-        const audioData = await wavBlob.arrayBuffer();
-        const audioBuffer = await audioContext.decodeAudioData(audioData);
-        
-        const src = audioContext.createBufferSource();
-        src.buffer = audioBuffer;
-        src.connect(audioContext.destination);
-        src.start();
-        
-        src.onended = () => {
+        // Finalize playback
+        if (lastSrc) {
+            lastSrc.onended = () => {
             updateProgress(100);
-            updateGenerationStatus(`✅ 流式播放完成!`, 'success');
-            addLog(`✅ 流式播放完成! | ${((totalBytes/1024/1024)).toFixed(1)}MB`, 'success');
-            resetStreamUI();
-        };
+                updateGenerationStatus(`✅ 流式播放完成!`, 'success');
+                addLog(`✅ 流式播放完成! | ${((totalBytes/1024/1024)).toFixed(1)}MB`, 'success');
+            };
+        }
 
-        // Show player for download
+        // Show player for download (full WAV)
+        const fullWavBlob = pcm16ToWav(chunks, sampleRate);
         if (currentAudioUrl) URL.revokeObjectURL(currentAudioUrl);
-        currentAudioUrl = audioUrl;
+        currentAudioUrl = URL.createObjectURL(fullWavBlob);
         if (mainPlayer) {
-            mainPlayer.src = audioUrl;
+            mainPlayer.src = currentAudioUrl;
             playerContainer?.classList.remove('hidden');
         }
 
@@ -709,6 +687,13 @@ async function streamAndPlay() {
             updateGenerationStatus(`❌ ${err.message}`, 'error');
         }
     } finally {
+        audioContext?.close();
+        // Enable download button when audio is available
+        if (currentAudioUrl) {
+            const dlBtn = document.getElementById('downloadBtn');
+            dlBtn.disabled = false;
+            dlBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
         if (!isStreamPaused) resetStreamUI();
     }
 }
@@ -781,7 +766,7 @@ function updateProgress(p) { document.getElementById('progressBar').style.width 
 function resetStreamUI() {
     isStreaming = false; isStreamPaused = false; resumeStreamResolve = null;
     document.getElementById('playBtn').disabled = false; document.getElementById('playBtn').innerHTML = '<i class="fa-solid fa-bolt mr-1"></i> <span>实时播放</span>';
-    document.getElementById('createBtn').disabled = false; document.getElementById('createBtn').innerHTML = '<i class="fa-solid fa-download mr-1"></i> <span>成品创建</span>';
+    
     document.getElementById('stopBtn').disabled = true; document.getElementById('stopBtn').classList.add('opacity-50', 'cursor-not-allowed');
     pauseBtn.innerHTML = '<i class="fa-solid fa-circle-play mr-1"></i> <span>播放/暂停</span>';
 }
@@ -789,7 +774,14 @@ function toggleAdvanced() { const c = document.getElementById('advancedContent')
 
 // ===== 事件绑定 =====
 document.getElementById('playBtn').addEventListener('click', streamAndPlay);
-document.getElementById('createBtn').addEventListener('click', generateAudio);
+document.getElementById('downloadBtn')?.addEventListener('click', () => {
+    if (!currentAudioUrl) return;
+    const a = document.createElement('a');
+    a.href = currentAudioUrl;
+    a.download = 'voxcpm_audio_' + Date.now() + '.wav';
+    a.click();
+});
+
 pauseBtn.addEventListener('click', togglePlayPause);
 document.getElementById('stopBtn').addEventListener('click', async () => {
     isStreamPaused = false; if (resumeStreamResolve) { resumeStreamResolve(); resumeStreamResolve = null; }
