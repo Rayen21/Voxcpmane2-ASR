@@ -764,13 +764,13 @@ mainPlayer.addEventListener('ended', () => { if (!isStreaming) { pauseBtn.innerH
 // ===== 工具函数 =====
 function updateProgress(p, isGenerating = false) { 
     const bar = document.getElementById('progressBar');
-    if (isGenerating) {
-        bar.classList.remove('generating');
+    if (isGenerating && !window._simStarted) {
+        window._simStarted = true;
         bar.style.width = '0%';
         document.getElementById('progressLabel').textContent = '正在生成...';
-        // 模拟百分比跳动
         simulateProgress();
-    } else {
+    } else if (!isGenerating) {
+        window._simStarted = false;
         bar.classList.remove('generating');
         bar.style.width = p+'%'; 
         document.getElementById('progressPercent').textContent = Math.round(p)+'%';
@@ -792,6 +792,8 @@ function simulateProgress() {
     }, 300);
 }
 function resetStreamUI() {
+    window._simStarted = false;
+    if (window._simInterval) clearInterval(window._simInterval);
     isStreaming = false; isStreamPaused = false; resumeStreamResolve = null;
     document.getElementById('playBtn').disabled = false; document.getElementById('playBtn').innerHTML = '<i class="fa-solid fa-bolt mr-1"></i> <span>实时播放</span>';
     
