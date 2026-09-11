@@ -661,7 +661,7 @@ async function streamAndPlay() {
             }
             
             const prog = Math.min(95, (totalBytes / 1024 / 1024 * 5).toFixed(0));
-            updateProgress(null, true);
+            updateProgress(prog, true);
         }
 
         // Finalize playback
@@ -762,20 +762,17 @@ mainPlayer.addEventListener('pause', () => { if (!isStreaming) { pauseBtn.innerH
 mainPlayer.addEventListener('ended', () => { if (!isStreaming) { pauseBtn.innerHTML = '<i class="fa-solid fa-circle-play mr-1"></i> <span>播放/暂停</span>'; document.getElementById('progressLabel').textContent = '准备就绪'; updateProgress(0); updateGenerationStatus('✅ 播放完毕', 'success'); } });
 
 // ===== 工具函数 =====
-function updateProgress(p, isGenerating = false) { 
+function updateProgress(p, isGenerating = false) {
     const bar = document.getElementById('progressBar');
     if (isGenerating && !window._simStarted) {
         window._simStarted = true;
-        bar.style.width = '0%';
-        document.getElementById('progressLabel').textContent = '正在生成...';
         simulateProgress();
     } else if (!isGenerating) {
         window._simStarted = false;
-        bar.classList.remove('generating');
-        bar.style.width = p+'%'; 
-        document.getElementById('progressPercent').textContent = Math.round(p)+'%';
         if (window._simInterval) clearInterval(window._simInterval);
     }
+    bar.style.width = p+'%'; 
+    document.getElementById('progressPercent').textContent = Math.round(p)+'%';
 }
 
 function simulateProgress() {
