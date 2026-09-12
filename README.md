@@ -1,4 +1,13 @@
 # VoxCPM2 本地部署说明
+![VoxCPM2 TTS Web UI — Light Mode](docs/screenshots/voxcpm-ui-light.png)
+
+**Light Mode**
+
+![VoxCPM2 TTS Web UI — Dark Mode](docs/screenshots/voxcpm-ui-dark.png)
+
+**Dark Mode**
+
+---
 
 ## 项目特点
 
@@ -60,7 +69,7 @@ conda activate voxcpm2
 
 ```bash
 cd ~/Documents  # 或任意你喜欢的目录
-git clone https://github.com/0seba/VoxCPMANE.git voxcpm
+git clone https://github.com/Rayen21/Voxcpmane2-ASR.git voxcpm
 cd voxcpm
 ```
 
@@ -168,3 +177,16 @@ A: 设置代理或使用国内镜像：
 export HF_ENDPOINT=https://hf-mirror.com
 voxcpmane2-server --split-base-lm --port 8000
 ```
+
+---
+
+## 致谢与声明
+
+本项目基于 [0seba/VoxCPMANE](https://github.com/0seba/VoxCPMANE) 修改而来，在此感谢原作者的开源贡献。
+
+本仓库（[Rayen21/Voxcpmane2-ASR](https://github.com/Rayen21/Voxcpmane2-ASR)）为 VoxCPMANE 的社区维护分支，主要更新包括：
+
+- ASR 自动转录模块集成（faster-whisper + ctranslate2）
+- split-base-lm 模式支持 M1/M2/M3 Mac 设备
+- 自定义声音管理增强与流式播放优化
+- 版本升级至 0.1.3b1
