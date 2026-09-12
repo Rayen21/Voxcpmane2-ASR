@@ -50,6 +50,53 @@ eval "$(conda shell.bash hook)" && conda activate voxcpm2
 voxcpmane2-server --split-base-lm --port 8000
 ```
 
+
+## 项目加载机制（关键理解）
+
+本项目采用 **editable install** 方式，让 conda 环境中的代码指向仓库目录：
+
+```bash
+cd /Users/hanqingren/voxcpm && pip install -e .
+```
+
+### 原理说明
+
+`pip install -e .` 会在 site-packages 中创建一个 `.pth` 文件：
+- 位置: `/Users/hanqingren/miniforge3/envs/voxcpm2/lib/python3.11/site-packages/_editable_impl_voxcpmane2.pth`
+- 内容: `/Users/hanqingren/voxcpm/src`
+
+Python 启动时读取 `.pth` 文件，把 `src` 目录加入 `sys.path`。因此：
+- **conda 环境中的 `voxcpmane` 包 = 仓库目录下的 `src/voxcpmane`**
+- 修改仓库代码 → conda 环境自动生效（无需重新安装）
+
+### 为什么这样设计？
+
+| 方式 | 优点 | 缺点 |
+|------|------|------|
+| editable install (当前) | 改代码即生效，开发方便 | 前端文件需手动复制 |
+| `pip install .` | 一次性打包 | 每次修改都要重新安装 |
+| 直接复制到 site-packages | 简单粗暴 | 无法追踪版本 |
+
+### 目录关系总结
+
+```
+仓库目录: /Users/hanqingren/voxcpm/src/voxcpmane/
+           ↓ editable install (.pth)
+conda环境: /Users/hanqingren/miniforge3/envs/voxcpm2/lib/python3.11/site-packages/voxcpmane/
+           ↑ 实际运行时加载的是仓库目录下的代码
+```
+
+### 前端文件的特殊处理
+
+Python 包通过 `.pth` 指向 `src/`，但前端 HTML/CSS/JS 文件不在 Python import 路径中。因此：
+- **后端代码修改** → 立即生效（editable install）
+- **前端文件修改** → 需手动复制到 site-packages 下的 frontend 目录
+
+```bash
+cp /Users/hanqingren/voxcpm/src/voxcpmane/frontend/index.html    /Users/hanqingren/miniforge3/envs/voxcpm2/lib/python3.11/site-packages/voxcpmane/frontend/index.html
+```
+
+
 ### 使用本地模型目录（跳过下载）
 ```bash
 SNAPSHOT="/Users/hanqingren/.cache/huggingface/hub/models--seba--VoxCPM2ANE-Preview/snapshots/def350ecae1aa3e4028970a5eae8faa7b3800d40"
