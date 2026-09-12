@@ -5,6 +5,7 @@
 - **GitHub**: https://github.com/0seba/VoxCPMANE
 - **本地设备**: M1 Max
 
+
 ---
 
 ## 工作路径（核心）
@@ -20,6 +21,7 @@
 1. **启动服务器**：`voxcpm2-server` 命令从 conda 环境激活后执行，实际运行的是安装目录中的代码
 2. **修改代码**：前端 UI 修改、代码编辑都在 `/Users/hanqingren/voxcpm` 中进行
 3. **修改后必须同步到安装目录**：在仓库目录修改完前端后，**必须手动复制**到安装目录才能生效
+
 ---
 
 ## M1 设备兼容性问题（核心）
@@ -37,6 +39,7 @@ unless the model type is ML Program.
 uv tool install --python '>=3.10,<3.13' --prerelease allow -U 'voxcpmane2==0.1.3b1' voxcpmane2-server --split-base-lm
 ```
 
+
 ---
 
 ## 快速启动
@@ -53,6 +56,7 @@ SNAPSHOT="/Users/hanqingren/.cache/huggingface/hub/models--seba--VoxCPM2ANE-Prev
 voxcpmane2-server --model-dir "$SNAPSHOT" --split-base-lm
 ```
 
+
 ---
 
 ## 环境配置
@@ -64,12 +68,14 @@ voxcpmane2-server --model-dir "$SNAPSHOT" --split-base-lm
 ### 依赖包
 coremltools==9.0, numpy>=2, ml-dtypes>=0.5.0, soundfile, soxr>=1.0.0, tokenizers, fastapi, uvicorn, aiofiles, huggingface_hub, sounddevice, ftfy>=6.3.1, inflect, wetext, regex
 
+
 ---
 
 ## 模型缓存
 - **HF 缓存 (主模型)**: ~/.cache/huggingface/hub/models--seba--VoxCPM2ANE-Preview
 - **HF 缓存 (split BaseLM)**: ~/.cache/huggingface/hub/models--seba--VoxCPMANE2-Debug-Models
 - **自定义声音缓存**: ~/.cache/ane_tts
+
 
 ---
 
@@ -86,6 +92,7 @@ coremltools==9.0, numpy>=2, ml-dtypes>=0.5.0, soundfile, soxr>=1.0.0, tokenizers
 | POST | /v1/voices | 创建自定义声音 |
 | DELETE | /v1/voices/{name} | 删除自定义声音 |
 
+
 ---
 
 ## LM 模式选项
@@ -97,6 +104,7 @@ coremltools==9.0, numpy>=2, ml-dtypes>=0.5.0, soundfile, soxr>=1.0.0, tokenizers
 | always-loaded | 始终保留长度 1 和预填充大小 | 最快响应 |
 | hot-swap | 空闲时预加载，解码时切换 | 内存受限时 |
 
+
 ---
 
 ## 声音管理模式
@@ -106,6 +114,7 @@ coremltools==9.0, numpy>=2, ml-dtypes>=0.5.0, soundfile, soxr>=1.0.0, tokenizers
 | reference | 仅参考音频 | 最低 | 好 |
 | reference_plus_prompt | 参考 + 提示音频 | 中等 | 更好 |
 | high_similarity | 高相似度（使用转录） | 最高 | 最好 |
+
 
 ---
 
@@ -118,6 +127,7 @@ coremltools==9.0, numpy>=2, ml-dtypes>=0.5.0, soundfile, soxr>=1.0.0, tokenizers
 5. **修改前端后必须同步到安装目录才能生效**
 6. **服务器端口统一为 8000**，前端 API_BASE_URL 必须配置为 `http://localhost:8000`
 
+
 ---
 
 ## 版本说明
@@ -126,6 +136,7 @@ coremltools==9.0, numpy>=2, ml-dtypes>=0.5.0, soundfile, soxr>=1.0.0, tokenizers
 - **本地安装版本**: 0.1.3b1 beta（M1 设备必须使用此版本）
 
 所有测试、前端修改和功能验证均针对 0.1.3b1 安装版进行。
+
 
 ---
 
@@ -157,7 +168,22 @@ coremltools==9.0, numpy>=2, ml-dtypes>=0.5.0, soundfile, soxr>=1.0.0, tokenizers
 cp /Users/hanqingren/voxcpm/src/voxcpmane/frontend/index.html /Users/hanqingren/miniforge3/envs/voxcpm2/lib/python3.11/site-packages/voxcpmane/frontend/index.html
 ```
 
+
 ---
+
+
+### 2026-09-12 — IndentationError 修复 + ASR 转录支持
+
+**问题**: `server.py` 第 592 行（4 空格 vs 3 空格）和第 1400 行 else 块缩进混乱导致启动失败。
+
+**修复内容**:
+- `server.py`: 修正 CreateVoiceRequest.mode 字段缩进，修复 else 块对齐问题
+- `lm.py`: 新增 split-base-lm 模式支持（SPLIT_BASE_LM_REPO_ID、download_patterns）
+- `generator.py`: 增强语音生成逻辑
+- `feat_encoder.py`: 特征编码器优化
+- `frontend/index.html`: 前端 UI 改进
+
+**提交**: `7ee82a8` — fix: resolve IndentationError in server.py (lines 592, 1400) and add ASR transcription support
 
 ## 当前状态
 
