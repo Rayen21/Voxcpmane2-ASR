@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "voxcpmane2"
-version = "0.1.2"
+version = "0.1.3b1"
 description = "VoxCPM2 TTS runtime + HTTP server for Apple Neural Engine"
 requires-python = ">=3.10,<3.13"
 license = { text = "MIT" }
@@ -12,7 +12,6 @@ readme = "README.md"
 
 
 dependencies = [
-    "coremltools==9.0",
     "numpy>=2",
     "ml-dtypes>=0.5.0",
     "soundfile",
@@ -31,6 +30,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+asr = [
+    "faster-whisper>=1.0",
+    "ctranslate2>=4.0",
+]
 development = [
     "safetensors>=0.4.0",
 ]

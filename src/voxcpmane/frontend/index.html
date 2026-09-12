@@ -479,6 +479,27 @@ async function handleAudioUpload(event) {
             modeStates[currentMode].refAudioPath = data.file_path;
             document.getElementById('audioPathInput').value = data.file_path;
             addLog(`✅ 音频已上传，路径: ${data.file_path}`, 'success');
+            
+            // 极致克隆模式下自动转录
+            if (currentMode === 'ultimate-cloning') {
+                try {
+                    const transRes = await fetch(`${API_BASE_URL}/v1/audio/transcribe`, {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({ file_path: data.file_path, language: "zh" })
+                    });
+                    const transData = await transRes.json();
+                    if (transData.status === 'success') {
+                        document.getElementById('transcriptText').value = transData.text;
+                        modeStates[currentMode].transcriptText = transData.text;
+                        addLog(`✅ 转录完成: ${transData.text.substring(0, 50)}...`, 'success');
+                    } else {
+                        addLog(`⚠️ 转录失败: ${transData.detail}`, 'warning');
+                    }
+                } catch (err) {
+                    addLog(`⚠️ 转录出错: ${err.message}`, 'warning');
+                }
+            }
             uploadOk = true;
         } else throw new Error(data.detail || '上传失败');
     } catch (err) {

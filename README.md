@@ -377,6 +377,39 @@ curl http://localhost:8000/v1/voices \
 A transcript is optional for VoxCPM2 reference-only cloning, but required for
 prompt-continuation cloning.
 
+## Automatic Speech Recognition (ASR)
+
+VoxCPMANE2 supports automatic transcription of reference audio using the
+[faster-whisper](https://github.com/SYSTRAN/faster-whisper) library. When you
+create a custom voice without providing `prompt_text`, the server will
+automatically transcribe the reference audio and use it as the prompt for
+continuation cloning.
+
+Install ASR support:
+
+```bash
+uv pip install --python '>=3.10,<3.13' voxcpmane2[asr]
+# or
+pip install voxcpmane2[asr]
+```
+
+The first voice creation will download the Whisper small model (~1.4 GB). Subsequent
+runs reuse the cached model. Transcription uses Apple Neural Engine acceleration
+on supported hardware.
+
+Example — create a voice without providing transcript:
+
+```bash
+curl http://localhost:8000/v1/voices   -H "Content-Type: application/json"   -d '{
+    "voice_name": "myvoice",
+    "reference_wav_path": "/path/to/reference.wav",
+    "replace": true
+  }'
+```
+
+The server will auto-transcribe the reference audio and use it as `prompt_text`.
+
+
 ## Metrics And Tuning
 
 Use `--live-rtf` to print real-time-factor metrics:
