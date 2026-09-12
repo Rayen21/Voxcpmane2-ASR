@@ -1,6 +1,106 @@
 # VoxCPM2 本地部署记录
 
 ## 基本信息
+## 从零安装指南（完整步骤）
+
+以下是在 M1 Mac 上从头搭建 VoxCPM2 的完整流程。
+
+### Step 1: 准备 Conda 环境
+
+```bash
+# 如果没有 Miniforge，先安装：
+brew install miniforge
+
+# 创建 Python 3.11 环境（voxcpm2 要求 >=3.10, <3.13）
+conda create -n voxcpm2 python=3.11 -y
+conda activate voxcpm2
+```
+
+### Step 2: 克隆项目源码
+
+```bash
+cd ~/Documents  # 或任意你喜欢的目录
+git clone https://github.com/0seba/VoxCPMANE.git voxcpm
+cd voxcpm
+```
+
+> **注意**：仓库目录 `/Users/hanqingren/voxcpm` 仅用于开发，不直接运行。
+
+### Step 3: 安装项目（editable install）
+
+```bash
+pip install -e .
+```
+
+这一步会：
+1. 把 `src/voxcpmane` 加入 Python 的 import 路径
+2. 注册 `voxcpmane2-server` 命令行工具到 conda 环境
+3. 安装所有依赖包（numpy, fastapi, uvicorn, tokenizers 等）
+
+验证：
+```bash
+python -c "import voxcpmane; print(voxcpmane.__file__)"
+# 应输出 /Users/hanqingren/voxcpm/src/voxcpmane/__init__.py
+```
+
+### Step 4: 下载模型（首次运行自动下载）
+
+```bash
+cd ~/Documents/voxcpm
+eval "$(conda shell.bash hook)" && conda activate voxcpm2
+
+# 首次启动会自动从 HuggingFace 下载模型到 ~/.cache/huggingface/hub/
+voxcpmane2-server --split-base-lm --port 8000
+```
+
+> **M1 设备必须加 `--split-base-lm`**，否则 CoreML 会报错。
+
+### Step 5: 验证服务
+
+浏览器打开 http://127.0.0.1:8000，或：
+```bash
+curl -s http://127.0.0.1:8000/health
+# 应返回 {"status": "ok"}
+```
+
+### Step 6: 前端文件同步（开发时）
+
+每次修改 `src/voxcpmane/frontend/index.html` 后：
+```bash
+cp src/voxcpmane/frontend/index.html    $(python -c "import voxcpmane; import os; print(os.path.dirname(voxcpmane.__file__))")/frontend/index.html
+```
+
+### Step 7: 停止服务
+
+```bash
+# 找到服务器进程
+lsof -i :8000 | grep LISTEN
+
+# 杀死进程（替换 PID）
+kill <PID>
+```
+
+---
+
+## 常见问题
+
+**Q: 修改代码后没生效？**
+A: Python 后端通过 editable install 自动同步，无需操作。前端文件需手动复制（见 Step 6）。
+
+**Q: M1 启动报错 `MLModelConfiguration`？**
+A: 必须使用 `--split-base-lm` 参数。
+
+**Q: 模型下载很慢？**
+A: 设置代理或使用国内镜像：
+```bash
+export HF_ENDPOINT=https://hf-mirror.com
+voxcpmane2-server --split-base-lm --port 8000
+```
+
+---
+
+
+
 - **项目**: VoxCPMANE2 (VoxCPM2 TTS Server)
 - **GitHub**: https://github.com/0seba/VoxCPMANE
 - **本地设备**: M1 Max
