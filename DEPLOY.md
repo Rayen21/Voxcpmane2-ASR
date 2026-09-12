@@ -1,9 +1,49 @@
-# VoxCPM2 本地部署记录
+# VoxCPM2 项目说明
 
-## 基本信息
-## 从零安装指南（完整步骤）
+## 项目特点
 
-以下是在 M1 Mac 上从头搭建 VoxCPM2 的完整流程。
+### 1. Apple Neural Engine (ANE) 原生加速
+- 基于 CoreML 构建，充分利用 M1/M2/M3 Mac 的神经网络引擎硬件加速
+- 使用 `--split-base-lm` 模式解决 M1 设备 CoreML 兼容性问题
+- ctranslate2 + Metal → ANE 后端实现 ASR 转录加速
+
+### 2. OpenAI 兼容 API
+- `/v1/audio/speech` — 标准语音合成端点（非流式）
+- `/v1/audio/speech/stream` — 流式传输 PCM16 音频，支持实时播放
+- `/v1/voices` — 自定义声音管理（创建、删除、列表）
+
+### 3. ASR 自动转录
+- 集成 faster-whisper (ctranslate2)，支持 tiny/base/small/large-v3 模型
+- 默认使用 small 模型，中文识别准确率最佳
+- 当 `prompt_text` 为空时自动转录参考音频作为提示文本
+- 模型加载后全局缓存 5 分钟，避免重复初始化开销
+
+### 4. LM 推理模式灵活切换
+| 模式 | 说明 | 适用场景 |
+|------|------|----------|
+| single-length (默认) | 使用相同长度预填充和解码 | 通用推荐 |
+| preload | 预加载长度 1 和预填充大小 | 追求最佳 RTF |
+| always-loaded | 始终保留长度 1 和预填充大小 | 最快响应 |
+| hot-swap | 空闲时预加载，解码时切换 | 内存受限时 |
+
+### 5. 自定义声音管理
+- **reference** — 仅参考音频，延迟最低
+- **reference_plus_prompt** — 参考 + 提示音频，质量更好
+- **high_similarity** — 高相似度（使用 ASR 转录），效果最佳
+
+### 6. 实时流式播放
+- `streamAndPlay()` 增量解码：每收到一个 chunk 就构建 WAV blob、解码成 AudioBuffer
+- 按时间顺序排队到 AudioContext，不再等全部数据收完才一次性播放
+- 支持进度条实时更新（字节数 → 百分比）
+
+### 7. Editable Install 开发模式
+- `pip install -e .` 让仓库代码直接映射到 conda 环境
+- Python 后端修改即时生效，无需重新安装
+- 前端文件需手动同步到 site-packages
+
+---
+
+## 从零安装步骤
 
 ### Step 1: 准备 Conda 环境
 
@@ -24,16 +64,16 @@ git clone https://github.com/0seba/VoxCPMANE.git voxcpm
 cd voxcpm
 ```
 
-> **注意**：仓库目录 `/Users/hanqingren/voxcpm` 仅用于开发，不直接运行。
+> **注意**：仓库目录仅用于开发，不直接运行。
 
-### Step 3: 安装项目（editable install）
+### Step 3: 安装项目（Editable Install）
 
 ```bash
 pip install -e .
 ```
 
 这一步会：
-1. 把 `src/voxcpmane` 加入 Python 的 import 路径
+1. 把 `src/voxcpmane` 加入 Python import 路径
 2. 注册 `voxcpmane2-server` 命令行工具到 conda 环境
 3. 安装所有依赖包（numpy, fastapi, uvicorn, tokenizers 等）
 
@@ -99,241 +139,33 @@ voxcpmane2-server --split-base-lm --port 8000
 
 ---
 
-
-
-- **项目**: VoxCPMANE2 (VoxCPM2 TTS Server)
-- **GitHub**: https://github.com/0seba/VoxCPMANE
-- **本地设备**: M1 Max
-
-
----
-
-## 工作路径（核心）
-
-本项目涉及两个目录，**必须严格区分**：
-
-| 目录 | 路径 | 用途 |
-|------|------|------|
-| **安装目录** | `/Users/hanqingren/miniforge3/envs/voxcpm2` | **真实运行的项目目录**，服务器从这里启动，前端从这里加载 |
-| **仓库目录** | `/Users/hanqingren/voxcpm` | 从 GitHub 拉取的源码目录，仅用于开发修改 |
-
-### 关键规则
-1. **启动服务器**：`voxcpm2-server` 命令从 conda 环境激活后执行，实际运行的是安装目录中的代码
-2. **修改代码**：前端 UI 修改、代码编辑都在 `/Users/hanqingren/voxcpm` 中进行
-3. **修改后必须同步到安装目录**：在仓库目录修改完前端后，**必须手动复制**到安装目录才能生效
-
----
-
-## M1 设备兼容性问题（核心）
-
-M1 设备使用标准版本（0.1.2）启动时会报错：
-```
-RuntimeError: `MLModelConfiguration`'s `.functionName` property must be `nil`
-unless the model type is ML Program.
-```
-
-### 解决方案
-**必须安装 0.1.3b1 beta 版本**，并使用 `--split-base-lm` 参数：
-
-```bash
-uv tool install --python '>=3.10,<3.13' --prerelease allow -U 'voxcpmane2==0.1.3b1' voxcpmane2-server --split-base-lm
-```
-
-
----
-
-## 快速启动
-
-```bash
-cd /Users/hanqingren/voxcpm
-eval "$(conda shell.bash hook)" && conda activate voxcpm2
-voxcpmane2-server --split-base-lm --port 8000
-```
-
-
-## 项目加载机制（关键理解）
-
-本项目采用 **editable install** 方式，让 conda 环境中的代码指向仓库目录：
-
-```bash
-cd /Users/hanqingren/voxcpm && pip install -e .
-```
-
-### 原理说明
-
-`pip install -e .` 会在 site-packages 中创建一个 `.pth` 文件：
-- 位置: `/Users/hanqingren/miniforge3/envs/voxcpm2/lib/python3.11/site-packages/_editable_impl_voxcpmane2.pth`
-- 内容: `/Users/hanqingren/voxcpm/src`
-
-Python 启动时读取 `.pth` 文件，把 `src` 目录加入 `sys.path`。因此：
-- **conda 环境中的 `voxcpmane` 包 = 仓库目录下的 `src/voxcpmane`**
-- 修改仓库代码 → conda 环境自动生效（无需重新安装）
-
-### 为什么这样设计？
-
-| 方式 | 优点 | 缺点 |
-|------|------|------|
-| editable install (当前) | 改代码即生效，开发方便 | 前端文件需手动复制 |
-| `pip install .` | 一次性打包 | 每次修改都要重新安装 |
-| 直接复制到 site-packages | 简单粗暴 | 无法追踪版本 |
-
-### 目录关系总结
-
-```
-仓库目录: /Users/hanqingren/voxcpm/src/voxcpmane/
-           ↓ editable install (.pth)
-conda环境: /Users/hanqingren/miniforge3/envs/voxcpm2/lib/python3.11/site-packages/voxcpmane/
-           ↑ 实际运行时加载的是仓库目录下的代码
-```
-
-### 前端文件的特殊处理
-
-Python 包通过 `.pth` 指向 `src/`，但前端 HTML/CSS/JS 文件不在 Python import 路径中。因此：
-- **后端代码修改** → 立即生效（editable install）
-- **前端文件修改** → 需手动复制到 site-packages 下的 frontend 目录
-
-```bash
-cp /Users/hanqingren/voxcpm/src/voxcpmane/frontend/index.html    /Users/hanqingren/miniforge3/envs/voxcpm2/lib/python3.11/site-packages/voxcpmane/frontend/index.html
-```
-
-
-### 使用本地模型目录（跳过下载）
-```bash
-SNAPSHOT="/Users/hanqingren/.cache/huggingface/hub/models--seba--VoxCPM2ANE-Preview/snapshots/def350ecae1aa3e4028970a5eae8faa7b3800d40"
-voxcpmane2-server --model-dir "$SNAPSHOT" --split-base-lm
-```
-
-
----
-
-## 环境配置
-
-- **Conda 环境**: voxcpm2 (Python 3.11)
-- **安装方式**: `pip install -e .` (editable mode)
-- **环境路径**: /Users/hanqingren/miniforge3/envs/voxcpm2
-
-### 依赖包
-coremltools==9.0, numpy>=2, ml-dtypes>=0.5.0, soundfile, soxr>=1.0.0, tokenizers, fastapi, uvicorn, aiofiles, huggingface_hub, sounddevice, ftfy>=6.3.1, inflect, wetext, regex
-
-
----
-
-## 模型缓存
-- **HF 缓存 (主模型)**: ~/.cache/huggingface/hub/models--seba--VoxCPM2ANE-Preview
-- **HF 缓存 (split BaseLM)**: ~/.cache/huggingface/hub/models--seba--VoxCPMANE2-Debug-Models
-- **自定义声音缓存**: ~/.cache/ane_tts
-
-
----
-
-## API 端点
+## API 端点一览
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | / | Web 前端页面 |
 | GET | /health | 服务器健康检查 |
 | GET | /voices | 获取可用声音列表 |
-| POST | /v1/audio/speech | 生成完整音频 |
+| POST | /v1/audio/speech | 生成完整音频（非流式） |
 | POST | /v1/audio/speech/stream | 流式传输 PCM16 音频 |
+| POST | /v1/audio/speech/playback | 播放生成的音频 |
 | POST | /v1/audio/speech/cancel | 取消当前生成 |
 | POST | /v1/voices | 创建自定义声音 |
 | DELETE | /v1/voices/{name} | 删除自定义声音 |
 
-
 ---
 
-## LM 模式选项
+## 目录结构
 
-| 模式 | 说明 | 适用场景 |
-|------|------|----------|
-| single-length (默认) | 使用相同长度进行预填充和解码 | 默认推荐 |
-| preload | 预加载长度 1 和预填充大小 | 追求最佳 RTF |
-| always-loaded | 始终保留长度 1 和预填充大小 | 最快响应 |
-| hot-swap | 空闲时预加载，解码时切换 | 内存受限时 |
-
-
----
-
-## 声音管理模式
-
-| 模式 | 说明 | 延迟 | 质量 |
-|------|------|------|------|
-| reference | 仅参考音频 | 最低 | 好 |
-| reference_plus_prompt | 参考 + 提示音频 | 中等 | 更好 |
-| high_similarity | 高相似度（使用转录） | 最高 | 最好 |
-
-
----
-
-## 注意事项
-
-1. CoreML 首次加载模型可能需要几分钟
-2. **M1 设备必须使用 `--split-base-lm` 参数**
-3. 建议启动时使用 `--lm-mode preload` 获得最佳性能
-4. 自定义声音存储在 ~/.cache/ane_tts
-5. **修改前端后必须同步到安装目录才能生效**
-6. **服务器端口统一为 8000**，前端 API_BASE_URL 必须配置为 `http://localhost:8000`
-
-
----
-
-## 版本说明
-
-- **源码版本** (`pyproject.toml`): 0.1.2（仅作为项目版本记录）
-- **本地安装版本**: 0.1.3b1 beta（M1 设备必须使用此版本）
-
-所有测试、前端修改和功能验证均针对 0.1.3b1 安装版进行。
-
-
----
-
-## 前端修改记录（2026-09-11）
-
-### UI 修复
-- **骰子图标** — `.dice-icon` class 保持 `font-size: 20px`；开启自动随机时蓝色 `#0ea5e9`，关闭时灰色 `#8E8E93`（虚线骰子）
-- **骰子按钮背景色** — 深色模式下设为 `rgba(58, 58, 60, 0.8)`，与随机种子输入框一致
-- **右侧按钮文字颜色** — ID 选择器强制设置 `#E5E5EA` / `#3A3A3C`
-- **上传区域深色模式** — 设为 `rgba(58, 58, 60, 0.8)`，与随机种子输入区统一；文件名文字颜色 `#A1A1AA`
-
-### 功能修复
-- **流式播放实时解码** — `streamAndPlay()` 改为增量解码：每收到一个 chunk 就构建 WAV blob、解码成 AudioBuffer，排队到 AudioContext 中按时间顺序播放。不再等全部数据收完才一次性播放
-- **audioContext 创建时机** — 在收到响应、拿到 sampleRate 之后才创建 AudioContext（之前在全局变量为 null 时调用 decodeAudioData 报错）
-- **src 变量作用域修复** — `lastSrc` 在 while 循环外声明，避免循环后引用未定义变量
-- **骰子图标 class 保留** — toggleSeedMode() 中切换 icon class 时保留 `.dice-icon` 类名，防止字体大小丢失
-
-### 功能调整
-- **移除"成品创建"按钮** — 核实两个端点 `/v1/audio/speech`（非流式）和 `/v1/audio/speech/stream`（流式）生成的音频内容完全一样，统一使用"实时播放"一个入口
-- **新增"下载音频"按钮** — 生成完成后自动启用，点击即可下载 `.wav` 文件
-
-### 进度条修复
-- 恢复原始 `updateProgress()` 函数：根据接收字节数实时更新进度条宽度和百分比数字
-- 移除所有动画效果（呼吸/流光/脉冲），使用蓝色渐变背景 + 模拟百分比跳动
-
-### 同步规则
-所有前端修改在 `/Users/hanqingren/voxcpm/src/voxcpmane/frontend/index.html` 中进行，必须手动复制到安装目录：
-```bash
-cp /Users/hanqingren/voxcpm/src/voxcpmane/frontend/index.html /Users/hanqingren/miniforge3/envs/voxcpm2/lib/python3.11/site-packages/voxcpmane/frontend/index.html
+```
+/Users/hanqingren/voxcpm/src/voxcpmane/
+├── server.py          # FastAPI HTTP 服务 + OpenAI API
+├── generator.py       # VoxCPM2Generator 推理引擎
+├── lm.py              # LM 加载与 split-base-lm 支持
+├── asr.py             # faster-whisper ASR 转录模块
+├── feat_encoder.py    # 特征编码器
+├── metrics.py         # RTF 指标统计
+└── frontend/
+    └── index.html     # Web UI（需手动同步到 site-packages）
 ```
 
-
----
-
-
-### 2026-09-12 — IndentationError 修复 + ASR 转录支持
-
-**问题**: `server.py` 第 592 行（4 空格 vs 3 空格）和第 1400 行 else 块缩进混乱导致启动失败。
-
-**修复内容**:
-- `server.py`: 修正 CreateVoiceRequest.mode 字段缩进，修复 else 块对齐问题
-- `lm.py`: 新增 split-base-lm 模式支持（SPLIT_BASE_LM_REPO_ID、download_patterns）
-- `generator.py`: 增强语音生成逻辑
-- `feat_encoder.py`: 特征编码器优化
-- `frontend/index.html`: 前端 UI 改进
-
-**提交**: `7ee82a8` — fix: resolve IndentationError in server.py (lines 592, 1400) and add ASR transcription support
-
-## 当前状态
-
-服务器运行中：
-- 地址: http://127.0.0.1:8000
-- 健康状态: 正常
